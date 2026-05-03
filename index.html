@@ -1,0 +1,176 @@
+<html>
+<head>
+    <title>Neel CET Domination 👑</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white; min-height: 100vh; 
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .quote { 
+            background: rgba(255,255,255,0.1); 
+            padding: 20px; border-radius: 15px; 
+            font-style: italic; font-size: 1.2em; 
+            margin-bottom: 30px;
+        }
+        .tracker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { 
+            background: rgba(255,255,255,0.15); 
+            padding: 20px; border-radius: 15px; 
+            backdrop-filter: blur(10px);
+        }
+        .timer { font-size: 3em; text-align: center; margin: 20px 0; }
+        button { 
+            background: #ff6b6b; color: white; 
+            border: none; padding: 12px 24px; 
+            border-radius: 25px; cursor: pointer; 
+            font-size: 1.1em; margin: 5px;
+        }
+        button:hover { background: #ff5252; transform: scale(1.05); }
+        input, textarea { 
+            width: 100%; padding: 12px; 
+            border: none; border-radius: 10px; 
+            margin: 10px 0; background: rgba(255,255,255,0.9);
+        }
+        .completed { text-decoration: line-through; color: #90ee90; }
+        @media (max-width: 600px) { .tracker-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Neel CET Domination 👑</h1>
+            <div class="quote" id="dailyQuote"></div>
+        </div>
+        
+        <div class="tracker-grid">
+            <!-- Habit Tracker -->
+            <div class="card">
+                <h2>📊 Today's CET Blocks</h2>
+                <div>
+                    <label>5:30-8:15 Physics <input type="checkbox" id="morningBlock"></label><br>
+                    <label>3:30-5:00 Math <input type="checkbox" id="mathBlock"></label><br>
+                    <label>5:15-8:30 Chem/MCQs <input type="checkbox" id="afternoonBlock"></label><br>
+                    <label>9:00-9:45 AI Questions <input type="checkbox" id="nightBlock"></label>
+                </div>
+                <button onclick="saveHabits()">Save Progress</button>
+                <p id="streak">Current Streak: <span id="streakCount">0</span> days</p>
+            </div>
+
+            <!-- Timer -->
+            <div class="card">
+                <h2>⏰ Study Timer</h2>
+                <div class="timer" id="timer">25:00</div>
+                <button onclick="startTimer()">Start Study</button>
+                <button onclick="stopTimer()">Pause</button>
+                <button onclick="resetTimer()">Reset</button>
+                <p>Next: Physics Block</p>
+            </div>
+
+            <!-- Notes -->
+            <div class="card">
+                <h2>📝 Weak Topics / Notes</h2>
+                <textarea id="notes" placeholder="Physics Electrostatics weak... Mechanics formulas..."></textarea>
+                <button onclick="saveNotes()">Save Notes</button>
+            </div>
+
+            <!-- Reminders -->
+            <div class="card">
+                <h2>🚨 Today's Targets</h2>
+                <input type="text" id="reminder" placeholder="40 Physics MCQs...">
+                <button onclick="addReminder()">Add Reminder</button>
+                <ul id="reminderList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quotes = [
+            "Neel 👑: Physics dies first. Then Math. Then Chem crumbles.",
+            "4:30 AM warriors build empires.",
+            "Fear = fuel. Top 10 or nothing.",
+            "8.5 hrs today = Real estate tomorrow.",
+            "Weakest subject today = Strongest weapon tomorrow."
+        ];
+
+        // Daily Quote
+        document.getElementById('dailyQuote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+
+        // Timer
+        let timeLeft = 25 * 60;
+        let timerId;
+        function updateTimer() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            document.getElementById('timer').innerText = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        function startTimer() { timerId = setInterval(() => { timeLeft--; updateTimer(); if(timeLeft <= 0) clearInterval(timerId); }, 1000); }
+        function stopTimer() { clearInterval(timerId); }
+        function resetTimer() { clearInterval(timerId); timeLeft = 25*60; updateTimer(); }
+
+        // Habits
+        const habits = ['morningBlock', 'mathBlock', 'afternoonBlock', 'nightBlock'];
+        habits.forEach(habit => {
+            const checkbox = document.getElementById(habit);
+            checkbox.addEventListener('change', function() {
+                if(this.checked) this.parentElement.classList.add('completed');
+                else this.parentElement.classList.remove('completed');
+            });
+            // Load saved
+            if(localStorage.getItem(habit)) checkbox.checked = true;
+        });
+
+        function saveHabits() {
+            habits.forEach(habit => {
+                localStorage.setItem(habit, document.getElementById(habit).checked);
+            });
+            let streak = 0;
+            if(habits.every(h => localStorage.getItem(h) === 'true')) streak = parseInt(localStorage.getItem('streak') || 0) + 1;
+            localStorage.setItem('streak', streak);
+            document.getElementById('streakCount').innerText = streak;
+            alert('Progress Saved! 💪');
+        }
+
+        // Notes
+        document.getElementById('notes').value = localStorage.getItem('notes') || '';
+        function saveNotes() {
+            localStorage.setItem('notes', document.getElementById('notes').value);
+            alert('Notes Saved 📝');
+        }
+
+        // Reminders
+        function addReminder() {
+            const reminder = document.getElementById('reminder').value;
+            if(reminder) {
+                const li = document.createElement('li');
+                li.innerText = reminder;
+                li.onclick = () => li.remove();
+                document.getElementById('reminderList').appendChild(li);
+                document.getElementById('reminder').value = '';
+                saveReminders();
+            }
+        }
+        function saveReminders() {
+            const reminders = Array.from(document.querySelectorAll('#reminderList li')).map(li => li.innerText);
+            localStorage.setItem('reminders', JSON.stringify(reminders));
+        }
+        // Load reminders
+        const savedReminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+        savedReminders.forEach(rem => {
+            const li = document.createElement('li');
+            li.innerText = rem;
+            li.onclick = () => li.remove();
+            document.getElementById('reminderList').appendChild(li);
+        });
+
+        // Load streak
+        document.getElementById('streakCount').innerText = localStorage.getItem('streak') || 0;
+        updateTimer();
+    </script>
+</body>
+</html>
