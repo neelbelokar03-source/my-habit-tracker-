@@ -1,122 +1,1304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neel CET Command Center 👑</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .glass { 
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(20px); 
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        .chart-container {
-            position: relative; height: 250px; width: 100%;
-        }
-        .floating-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .floating-card:hover {
-            transform: translateY(-15px) scale(1.02);
-            box-shadow: 0 35px 60px rgba(0,0,0,0.4);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyVault — Daily Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c14;
+    --bg2: #0f1220;
+    --bg3: #141828;
+    --surface: #1a1f32;
+    --surface2: #222840;
+    --border: #2a3050;
+    --border2: #333d60;
+    --gold: #e8b86d;
+    --gold2: #f5d08a;
+    --gold-dim: rgba(232,184,109,0.15);
+    --amber: #d4783a;
+    --text: #e8e4d8;
+    --text2: #a09e96;
+    --text3: #6a6860;
+    --math: #6b8cda;
+    --physics: #7dcfb6;
+    --chem: #e07b8a;
+    --rest: #9b82d4;
+    --school: #f0c060;
+    --combined: #82b4e8;
+    --red: #e05a5a;
+    --green: #5ab87a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(107,140,218,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(232,184,109,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 28px 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--text2); font-weight: 400; }
+  .date-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text3);
+    text-align: right;
+    line-height: 1.6;
+  }
+  .date-display strong { color: var(--text2); display: block; font-size: 0.85rem; }
+
+  /* ─── NAV TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text3);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text2); background: var(--surface); }
+  .tab.active {
+    background: var(--surface);
+    border-color: var(--border2);
+    color: var(--gold);
+  }
+
+  /* ─── PANELS ─── */
+  .panel { display: none; padding: 28px 0 60px; }
+  .panel.active { display: block; }
+
+  /* ─── PROGRESS OVERVIEW ─── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-sub { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+
+  .progress-bar-wrap {
+    background: var(--border);
+    border-radius: 999px;
+    height: 6px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--gold), var(--amber));
+    transition: width 0.5s ease;
+  }
+
+  /* ─── SCHEDULE BLOCKS ─── */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--text2);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .schedule-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .block {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .block::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+  .block[data-type="math"]::before { background: var(--math); }
+  .block[data-type="physics"]::before { background: var(--physics); }
+  .block[data-type="school"]::before { background: var(--school); }
+  .block[data-type="rest"]::before { background: var(--rest); }
+  .block[data-type="chemistry"]::before { background: var(--chem); }
+  .block[data-type="combined"]::before { background: var(--combined); }
+  .block[data-type="wake"]::before { background: var(--gold); }
+
+  .block:hover { border-color: var(--border2); transform: translateX(2px); }
+  .block.done {
+    opacity: 0.65;
+    background: var(--bg3);
+  }
+  .block.done .block-name { text-decoration: line-through; color: var(--text3); }
+
+  .check-btn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--border2);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    color: transparent;
+    font-size: 13px;
+  }
+  .block.done .check-btn {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .check-btn:hover { border-color: var(--green); }
+
+  .block-info { flex: 1; }
+  .block-name { font-weight: 600; font-size: 0.92rem; color: var(--text); }
+  .block-time { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
+
+  .block-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .badge-math { background: rgba(107,140,218,0.15); color: var(--math); }
+  .badge-physics { background: rgba(125,207,182,0.15); color: var(--physics); }
+  .badge-school { background: rgba(240,192,96,0.15); color: var(--school); }
+  .badge-rest { background: rgba(155,130,212,0.15); color: var(--rest); }
+  .badge-chemistry { background: rgba(224,123,138,0.15); color: var(--chem); }
+  .badge-combined { background: rgba(130,180,232,0.15); color: var(--combined); }
+  .badge-wake { background: var(--gold-dim); color: var(--gold); }
+
+  .start-timer-btn {
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    border-radius: 6px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .start-timer-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ─── STREAK CALENDAR ─── */
+  .streak-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .streak-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .streak-day.completed { background: rgba(90,184,122,0.2); border-color: var(--green); color: var(--green); }
+  .streak-day.today { border-color: var(--gold); color: var(--gold); font-weight: 600; }
+  .streak-day.partial { background: rgba(232,184,109,0.12); border-color: rgba(232,184,109,0.4); color: var(--gold2); }
+
+  /* ─── TIMER PANEL ─── */
+  .timer-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+  .timer-main {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .subject-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+    justify-content: center;
+  }
+  .subj-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'Instrument Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .subj-btn.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+
+  .clock-ring {
+    position: relative;
+    width: 220px; height: 220px;
+    margin-bottom: 28px;
+  }
+  .clock-ring svg {
+    transform: rotate(-90deg);
+    position: absolute;
+    inset: 0;
+  }
+  .clock-track { fill: none; stroke: var(--border); stroke-width: 6; }
+  .clock-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
+  .clock-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .clock-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 2.6rem;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .clock-label {
+    font-size: 0.7rem;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  .timer-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .ctrl-btn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .ctrl-btn.primary {
+    width: 64px; height: 64px;
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--bg);
+    font-size: 1.4rem;
+  }
+  .ctrl-btn:hover:not(.primary) { border-color: var(--gold); color: var(--gold); }
+  .ctrl-btn.primary:hover { background: var(--gold2); }
+
+  .duration-presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .preset-btn {
+    padding: 4px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .preset-btn:hover { border-color: var(--border2); color: var(--text2); }
+  .preset-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+  /* Focus mode */
+  .focus-toggle {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--text3);
+    cursor: pointer;
+  }
+  .toggle-switch {
+    width: 36px; height: 20px;
+    background: var(--border2);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-switch.on { background: var(--gold); }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+  }
+  .toggle-switch.on::after { transform: translateX(16px); }
+
+  /* Focus overlay */
+  .focus-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  .focus-overlay.active { display: flex; }
+  .focus-subj {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--text2);
+  }
+  .focus-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 5rem;
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: -0.04em;
+  }
+  .focus-exit {
+    margin-top: 20px;
+    padding: 8px 24px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'Instrument Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .focus-exit:hover { border-color: var(--red); color: var(--red); }
+
+  /* Timer sidebar */
+  .timer-sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .sidebar-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .sidebar-title {
+    font-size: 0.72rem;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 12px;
+  }
+  .session-log { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+  .log-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    padding: 8px 10px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .log-subj { color: var(--text2); font-weight: 500; }
+  .log-dur { color: var(--text3); font-family: 'DM Mono', monospace; font-size: 0.72rem; }
+  .log-empty { color: var(--text3); font-size: 0.78rem; text-align: center; padding: 16px 0; }
+
+  .total-time-display {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .total-time-label { font-size: 0.72rem; color: var(--text3); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+  /* ─── DIARY PANEL ─── */
+  .diary-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    min-height: 560px;
+  }
+
+  .diary-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .diary-new-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--gold-dim);
+    border: 1px dashed rgba(232,184,109,0.4);
+    color: var(--gold);
+    border-radius: 10px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    font-family: 'Instrument Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .diary-new-btn:hover { background: rgba(232,184,109,0.2); }
+
+  .diary-entries-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 500px; }
+
+  .diary-entry-item {
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .diary-entry-item:hover { border-color: var(--border2); }
+  .diary-entry-item.active { border-color: var(--gold); background: var(--gold-dim); }
+  .diary-entry-date { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--text3); }
+  .diary-entry-preview { font-size: 0.78rem; color: var(--text2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .diary-entry-tags { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .entry-tag {
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.62rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .tag-math { background: rgba(107,140,218,0.2); color: var(--math); }
+  .tag-physics { background: rgba(125,207,182,0.2); color: var(--physics); }
+  .tag-chemistry { background: rgba(224,123,138,0.2); color: var(--chem); }
+  .tag-general { background: rgba(160,158,150,0.15); color: var(--text3); }
+  .tag-important { background: rgba(232,184,109,0.15); color: var(--gold); }
+
+  .star-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .star-btn.starred { color: var(--gold); }
+
+  /* Editor */
+  .diary-editor {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .editor-toolbar {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .editor-title {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    min-width: 100px;
+  }
+  .editor-title::placeholder { color: var(--text3); }
+  .editor-tag-btn {
+    padding: 4px 10px;
+    border-radius: 14px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text3);
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .editor-tag-btn:hover { border-color: var(--border2); color: var(--text2); }
+  .editor-tag-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+  .tag-toggle-math.active { border-color: var(--math); color: var(--math); background: rgba(107,140,218,0.1); }
+  .tag-toggle-physics.active { border-color: var(--physics); color: var(--physics); background: rgba(125,207,182,0.1); }
+  .tag-toggle-chemistry.active { border-color: var(--chem); color: var(--chem); background: rgba(224,123,138,0.1); }
+
+  .editor-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .editor-textarea {
+    width: 100%;
+    min-height: 380px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    resize: none;
+  }
+  .editor-textarea::placeholder { color: var(--text3); }
+
+  .editor-footer {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .save-btn {
+    padding: 8px 22px;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: var(--bg);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Instrument Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .save-btn:hover { background: var(--gold2); }
+  .delete-btn {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text3);
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: 'Instrument Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .delete-btn:hover { border-color: var(--red); color: var(--red); }
+  .word-count { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--text3); }
+
+  .empty-editor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 10px;
+    color: var(--text3);
+  }
+  .empty-editor .icon { font-size: 2.5rem; opacity: 0.4; }
+  .empty-editor p { font-size: 0.82rem; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 0.82rem;
+    color: var(--text);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 9999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .overview-grid { grid-template-columns: 1fr 1fr; }
+    .timer-layout { grid-template-columns: 1fr; }
+    .diary-layout { grid-template-columns: 1fr; }
+    .diary-sidebar { max-height: 200px; }
+    .diary-entries-list { max-height: 150px; }
+  }
+</style>
 </head>
-<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen p-6">
-    <div class="max-w-7xl mx-auto">
+<body>
 
-        <!-- Hero Header -->
-        <div class="text-center mb-12 glass rounded-3xl p-12 floating-card">
-            <div class="text-6xl mb-4">
-                <i class="fas fa-crown text-yellow-400 pulse-animation"></i>
-            </div>
-            <h1 class="text-5xl md:text-7xl font-black gradient-text mb-6 tracking-tight">
-                Neel CET
-            </h1>
-            <h1 class="text-5xl md:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-500 mb-8">
-                Command Center
-            </h1>
-            <div id="masterQuote" class="text-xl md:text-2xl font-semibold opacity-90 italic max-w-2xl mx-auto"></div>
+<!-- Focus Overlay -->
+<div class="focus-overlay" id="focusOverlay">
+  <div class="focus-subj" id="focusSubjLabel">Focus Session</div>
+  <div class="focus-time" id="focusBigTime">00:00</div>
+  <div style="font-size:0.75rem; color:var(--text3); font-family:'DM Mono',monospace;">Stay locked in 🔒</div>
+  <button class="focus-exit" onclick="exitFocus()">Exit Focus Mode</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<div class="wrapper">
+  <header>
+    <div class="logo">Study<span>Vault</span></div>
+    <div class="date-display">
+      <strong id="headerDate"></strong>
+      <span id="headerTime"></span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('tracker')">📊 Daily Tracker</button>
+    <button class="tab" onclick="switchTab('timer')">⏱ Focus Timer</button>
+    <button class="tab" onclick="switchTab('diary')">📓 Diary</button>
+  </div>
+
+  <!-- ─── TRACKER PANEL ─── -->
+  <div class="panel active" id="panel-tracker">
+    <div class="overview-grid">
+      <div class="stat-card">
+        <div class="stat-label">Today's Progress</div>
+        <div class="stat-value" id="progressPct">0%</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+        <div class="stat-sub" id="progressSub">0 / 7 blocks done</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Study Time Today</div>
+        <div class="stat-value" id="studyTimeToday">0h</div>
+        <div class="stat-sub">hrs scheduled: 7.5h</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Current Streak</div>
+        <div class="stat-value" id="streakCount">0</div>
+        <div class="stat-sub">days in a row 🔥</div>
+      </div>
+    </div>
+
+    <div class="section-title">Today's Schedule</div>
+    <div class="schedule-list" id="scheduleList">
+      <!-- Injected by JS -->
+    </div>
+
+    <div class="section-title" style="margin-top:28px;">Last 14 Days</div>
+    <div class="streak-grid" id="streakGrid"></div>
+  </div>
+
+  <!-- ─── TIMER PANEL ─── -->
+  <div class="panel" id="panel-timer">
+    <div class="timer-layout">
+      <div class="timer-main">
+        <div class="subject-selector" id="subjectSelector">
+          <button class="subj-btn active" data-subj="Maths">Maths</button>
+          <button class="subj-btn" data-subj="Physics">Physics</button>
+          <button class="subj-btn" data-subj="Chemistry">Chemistry</button>
+          <button class="subj-btn" data-subj="Combined">Combined</button>
+          <button class="subj-btn" data-subj="Other">Other</button>
         </div>
 
-        <!-- KPI Dashboard -->
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
-            <div class="glass rounded-2xl p-8 text-center floating-card">
-                <div class="text-4xl mb-2" id="streakKPI">
-                    <i class="fas fa-fire text-orange-400"></i>
-                </div>
-                <div class="text-3xl font-bold text-white" id="streakNum">0</div>
-                <div class="text-sm opacity-75">Day Streak 🔥</div>
-            </div>
-            <div class="glass rounded-2xl p-8 text-center floating-card">
-                <div class="text-4xl mb-2" id="scoreKPI">
-                    <i class="fas fa-trophy text-yellow-400"></i>
-                </div>
-                <div class="text-3xl font-bold text-white" id="scoreNum">0</div>
-                <div class="text-sm opacity-75">Today 4/4</div>
-            </div>
-            <div class="glass rounded-2xl p-8 text-center floating-card">
-                <div class="text-4xl mb-2">
-                    <i class="fas fa-calendar-day text-blue-300"></i>
-                </div>
-                <div class="text-3xl font-bold text-white" id="totalDaysNum">0</div>
-                <div class="text-sm opacity-75">Total Days</div>
-            </div>
-            <div class="glass rounded-2xl p-8 text-center floating-card">
-                <div class="text-4xl mb-2">
-                    <i class="fas fa-bolt text-emerald-400"></i>
-                </div>
-                <div class="text-3xl font-bold text-white" id="physicsMastery">0%</div>
-                <div class="text-sm opacity-75">Physics Mastery</div>
-            </div>
+        <div class="clock-ring">
+          <svg viewBox="0 0 220 220" width="220" height="220">
+            <circle class="clock-track" cx="110" cy="110" r="100"/>
+            <circle class="clock-fill" id="ringFill" cx="110" cy="110" r="100"
+              stroke="var(--gold)"
+              stroke-dasharray="628"
+              stroke-dashoffset="628"/>
+          </svg>
+          <div class="clock-center">
+            <div class="clock-time" id="timerDisplay">90:00</div>
+            <div class="clock-label" id="timerStatus">Ready</div>
+          </div>
         </div>
 
-        <!-- Main Dashboard Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
-            
-            <!-- Study Blocks (Priority 1) -->
-            <div class="lg:col-span-2 xl:col-span-2 glass rounded-3xl p-8 floating-card">
-                <div class="flex items-center mb-8">
-                    <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mr-4">
-                        <i class="fas fa-tasks text-2xl"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold">Study Blocks</h2>
-                </div>
-                
-                <div class="space-y-4">
-                    <div class="habit-block p-6 rounded-2xl border-2 border-transparent hover:border-emerald-400 transition-all duration-300 group" data-block="physics">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-5 h-5 rounded-full bg-gradient-to-r from-orange-500 to-red-500 mr-4 flex-shrink-0"></div>
-                                <div>
-                                    <div class="font-semibold text-lg">Physics Block</div>
-                                    <div class="text-sm opacity-75">5:30-8:15 AM • 40 MCQs Target</div>
-                                </div>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" id="physicsBlock">
-                                <div class="w-12 h-6 bg-gray-400 peer-focus:outline-none rounded-full peer peer-checked:bg-emerald-500 transition-all"></div>
-                                <div class="absolute w-4 h-4 bg-white rounded-full shadow top-1 left-1 transition-transform peer-checked:translate-x-6"></div>
-                            </label>
-                        </div>
-                    </div>
+        <div class="timer-controls">
+          <button class="ctrl-btn" onclick="resetTimer()" title="Reset">↺</button>
+          <button class="ctrl-btn primary" id="playPauseBtn" onclick="toggleTimer()">▶</button>
+          <button class="ctrl-btn" onclick="skipTimer()" title="Skip">⏭</button>
+        </div>
 
-                    <div class="habit-block p-6
+        <div class="duration-presets">
+          <button class="preset-btn" onclick="setDuration(25)">25 min</button>
+          <button class="preset-btn" onclick="setDuration(45)">45 min</button>
+          <button class="preset-btn active" onclick="setDuration(90)">90 min</button>
+          <button class="preset-btn" onclick="setDuration(150)">150 min</button>
+        </div>
+
+        <label class="focus-toggle" onclick="toggleFocusMode()">
+          <div class="toggle-switch" id="focusToggle"></div>
+          Focus Mode (hides everything)
+        </label>
+      </div>
+
+      <div class="timer-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-title">Today's Study Time</div>
+          <div class="total-time-display" id="todayStudyTotal">0h 0m</div>
+          <div class="total-time-label">total focused time</div>
+        </div>
+        <div class="sidebar-card" style="flex:1">
+          <div class="sidebar-title">Session Log</div>
+          <div class="session-log" id="sessionLog">
+            <div class="log-empty">No sessions yet today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DIARY PANEL ─── -->
+  <div class="panel" id="panel-diary">
+    <div class="diary-layout">
+      <div class="diary-sidebar">
+        <button class="diary-new-btn" onclick="newDiaryEntry()">+ New Entry</button>
+        <div class="diary-entries-list" id="diaryEntriesList">
+          <!-- injected -->
+        </div>
+      </div>
+      <div class="diary-editor" id="diaryEditorWrapper">
+        <div class="empty-editor" id="emptyEditorState">
+          <div class="icon">📓</div>
+          <p>Select an entry or create a new one</p>
+        </div>
+        <div id="editorContent" style="display:none; display:flex; flex-direction:column; height:100%;">
+          <div class="editor-toolbar">
+            <input type="text" class="editor-title" id="entryTitle" placeholder="Entry title…">
+            <button class="editor-tag-btn tag-toggle-math" data-tag="math" onclick="toggleTag(this)">Maths</button>
+            <button class="editor-tag-btn tag-toggle-physics" data-tag="physics" onclick="toggleTag(this)">Physics</button>
+            <button class="editor-tag-btn tag-toggle-chemistry" data-tag="chemistry" onclick="toggleTag(this)">Chemistry</button>
+            <button class="editor-tag-btn" data-tag="important" onclick="toggleTag(this)">⭐ Important</button>
+          </div>
+          <div class="editor-body">
+            <textarea class="editor-textarea" id="entryBody" placeholder="Write your notes, reflections, or key formulas here…" oninput="updateWordCount()"></textarea>
+          </div>
+          <div class="editor-footer">
+            <button class="delete-btn" onclick="deleteEntry()">Delete</button>
+            <span class="word-count" id="wordCount">0 words</span>
+            <button class="save-btn" onclick="saveEntry()">Save Entry</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+const BLOCKS = [
+  { id:'wake',     name:'Wake Up',         time:'4:30 AM',                type:'wake',      hours:0,   badge:'🌅 Rise' },
+  { id:'math',     name:'Mathematics',     time:'5:30 AM – 7:00 AM',      type:'math',      hours:1.5, badge:'Maths' },
+  { id:'physics',  name:'Physics',         time:'7:00 AM – 8:30 AM',      type:'physics',   hours:1.5, badge:'Physics' },
+  { id:'school',   name:'School',          time:'9:00 AM – 2:00 PM',      type:'school',    hours:5,   badge:'School' },
+  { id:'rest',     name:'Rest & Recovery', time:'2:00 PM – 3:30 PM',      type:'rest',      hours:1.5, badge:'Rest' },
+  { id:'chem',     name:'Chemistry',       time:'4:00 PM – 6:30 PM',      type:'chemistry', hours:2.5, badge:'Chemistry' },
+  { id:'combined', name:'Maths + Physics Combined', time:'7:00 PM – 8:30 PM', type:'combined', hours:1.5, badge:'Combined' },
+];
+
+const STUDY_BLOCKS = BLOCKS.filter(b => b.type !== 'wake' && b.type !== 'rest' && b.type !== 'school');
+const TOTAL_STUDY_HOURS = STUDY_BLOCKS.reduce((a,b)=>a+b.hours,0);
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('studyvault_state');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { blocks:{}, streak:[], sessions:[], diaryEntries:[] };
+}
+
+function saveState() {
+  localStorage.setItem('studyvault_state', JSON.stringify(state));
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function ensureToday() {
+  const k = todayKey();
+  if (!state.blocks[k]) state.blocks[k] = {};
+  return k;
+}
+
+// ─── HEADER CLOCK ─────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  document.getElementById('headerDate').textContent = now.toLocaleDateString('en-IN', opts);
+  document.getElementById('headerTime').textContent = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── TABS ─────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if (name === 'diary') renderDiaryList();
+}
+
+// ─── TRACKER ──────────────────────────────────────────────
+function renderSchedule() {
+  const k = ensureToday();
+  const list = document.getElementById('scheduleList');
+  list.innerHTML = '';
+  BLOCKS.forEach(b => {
+    const done = !!state.blocks[k][b.id];
+    const div = document.createElement('div');
+    div.className = 'block' + (done ? ' done' : '');
+    div.dataset.type = b.type;
+    div.innerHTML = `
+      <button class="check-btn" onclick="toggleBlock('${b.id}', event)">${done ? '✓' : ''}</button>
+      <div class="block-info">
+        <div class="block-name">${b.name}</div>
+        <div class="block-time">${b.time}</div>
+      </div>
+      <span class="block-badge badge-${b.type}">${b.badge}</span>
+      ${b.hours > 0 ? `<button class="start-timer-btn" onclick="launchTimer('${b.name}','${b.hours}',event)">▶ Start Timer</button>` : ''}
+    `;
+    list.appendChild(div);
+  });
+  updateProgress();
+  renderStreak();
+}
+
+function toggleBlock(id, e) {
+  e.stopPropagation();
+  const k = ensureToday();
+  state.blocks[k][id] = !state.blocks[k][id];
+  saveState();
+  renderSchedule();
+  toast(state.blocks[k][id] ? '✅ Block marked complete!' : 'Block unchecked', state.blocks[k][id] ? 'success' : '');
+}
+
+function launchTimer(name, hours, e) {
+  e.stopPropagation();
+  selectedSubject = name;
+  document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active'));
+  setDuration(hours * 60);
+  switchTab('timer');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.querySelectorAll('.tab')[0].classList.remove('active');
+}
+
+function updateProgress() {
+  const k = ensureToday();
+  const done = Object.values(state.blocks[k]).filter(Boolean).length;
+  const total = BLOCKS.length;
+  const pct = Math.round((done/total)*100);
+
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressSub').textContent = `${done} / ${total} blocks done`;
+
+  const studyHours = BLOCKS.filter(b => b.hours > 0 && state.blocks[k][b.id]).reduce((a,b)=>a+b.hours,0);
+  document.getElementById('studyTimeToday').textContent = studyHours + 'h';
+}
+
+function renderStreak() {
+  const grid = document.getElementById('streakGrid');
+  grid.innerHTML = '';
+  const today = todayKey();
+
+  let streak = 0;
+  let cur = new Date();
+  while(true) {
+    const k = cur.toISOString().slice(0,10);
+    const dayBlocks = state.blocks[k] || {};
+    const done = Object.values(dayBlocks).filter(Boolean).length;
+    if (done >= Math.ceil(BLOCKS.length * 0.5)) { streak++; cur.setDate(cur.getDate()-1); }
+    else break;
+  }
+  document.getElementById('streakCount').textContent = streak;
+
+  for(let i=13; i>=0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const k = d.toISOString().slice(0,10);
+    const dayBlocks = state.blocks[k] || {};
+    const done = Object.values(dayBlocks).filter(Boolean).length;
+    const total = BLOCKS.length;
+
+    const el = document.createElement('div');
+    el.className = 'streak-day';
+    el.textContent = d.getDate();
+    el.title = `${d.toDateString()}: ${done}/${total} blocks`;
+    if (k === today) el.classList.add('today');
+    else if (done >= total) el.classList.add('completed');
+    else if (done > 0) el.classList.add('partial');
+    grid.appendChild(el);
+  }
+}
+
+// ─── TIMER ────────────────────────────────────────────────
+let timerInterval = null;
+let totalSecs = 90 * 60;
+let remainSecs = 90 * 60;
+let running = false;
+let focusModeOn = false;
+let selectedSubject = 'Maths';
+let sessionStart = null;
+
+document.querySelectorAll('.subj-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedSubject = btn.dataset.subj;
+  });
+});
+
+function setDuration(mins) {
+  if(running) return;
+  totalSecs = mins * 60;
+  remainSecs = totalSecs;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(remainSecs / 60);
+  const s = remainSecs % 60;
+  const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('timerDisplay').textContent = str;
+  document.getElementById('focusBigTime').textContent = str;
+  document.getElementById('focusSubjLabel').textContent = selectedSubject;
+
+  const pct = 1 - (remainSecs / totalSecs);
+  const circumference = 628;
+  const offset = circumference - (pct * circumference);
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+}
+
+function toggleTimer() {
+  if (!running) {
+    running = true;
+    sessionStart = Date.now();
+    document.getElementById('playPauseBtn').textContent = '⏸';
+    document.getElementById('timerStatus').textContent = 'Running';
+    timerInterval = setInterval(() => {
+      if (remainSecs <= 0) {
+        completeTimer();
+        return;
+      }
+      remainSecs--;
+      updateTimerDisplay();
+    }, 1000);
+  } else {
+    running = false;
+    clearInterval(timerInterval);
+    document.getElementById('playPauseBtn').textContent = '▶';
+    document.getElementById('timerStatus').textContent = 'Paused';
+  }
+}
+
+function resetTimer() {
+  running = false;
+  clearInterval(timerInterval);
+  remainSecs = totalSecs;
+  document.getElementById('playPauseBtn').textContent = '▶';
+  document.getElementById('timerStatus').textContent = 'Ready';
+  updateTimerDisplay();
+}
+
+function skipTimer() {
+  if (running) completeTimer();
+}
+
+function completeTimer() {
+  running = false;
+  clearInterval(timerInterval);
+  const elapsed = totalSecs - remainSecs;
+  if (elapsed > 30) {
+    logSession(selectedSubject, elapsed);
+  }
+  remainSecs = totalSecs;
+  document.getElementById('playPauseBtn').textContent = '▶';
+  document.getElementById('timerStatus').textContent = 'Done! 🎉';
+  updateTimerDisplay();
+  if (focusModeOn) exitFocus();
+  toast('✅ Session complete! Great work!', 'success');
+}
+
+function logSession(subj, secs) {
+  const mins = Math.round(secs / 60);
+  const entry = { subj, mins, time: new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}) };
+  const k = todayKey();
+  if (!state.sessions[k]) state.sessions[k] = [];
+  state.sessions[k] = [...(state.sessions[k]||[]), entry];
+  saveState();
+  renderSessionLog();
+}
+
+function renderSessionLog() {
+  const k = todayKey();
+  const sessions = state.sessions[k] || [];
+  const log = document.getElementById('sessionLog');
+
+  if (sessions.length === 0) {
+    log.innerHTML = '<div class="log-empty">No sessions yet today</div>';
+  } else {
+    log.innerHTML = sessions.slice().reverse().map(s => `
+      <div class="log-item">
+        <div>
+          <div class="log-subj">${s.subj}</div>
+          <div style="font-size:0.65rem;color:var(--text3);font-family:'DM Mono',monospace;">${s.time}</div>
+        </div>
+        <div class="log-dur">${s.mins}m</div>
+      </div>
+    `).join('');
+  }
+
+  const totalMins = sessions.reduce((a,s)=>a+s.mins,0);
+  const h = Math.floor(totalMins/60), m = totalMins%60;
+  document.getElementById('todayStudyTotal').textContent = `${h}h ${m}m`;
+}
+
+function toggleFocusMode() {
+  focusModeOn = !focusModeOn;
+  document.getElementById('focusToggle').classList.toggle('on', focusModeOn);
+  if (focusModeOn) {
+    document.getElementById('focusOverlay').classList.add('active');
+  }
+}
+
+function exitFocus() {
+  focusModeOn = false;
+  document.getElementById('focusOverlay').classList.remove('active');
+  document.getElementById('focusToggle').classList.remove('on');
+}
+
+// ─── DIARY ────────────────────────────────────────────────
+let activeEntryId = null;
+let activeTags = new Set();
+
+function genId() { return 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
+
+function newDiaryEntry() {
+  activeEntryId = null;
+  activeTags = new Set();
+  document.getElementById('entryTitle').value = '';
+  document.getElementById('entryBody').value = '';
+  document.querySelectorAll('.editor-tag-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('wordCount').textContent = '0 words';
+  showEditor();
+  document.getElementById('entryTitle').focus();
+}
+
+function showEditor() {
+  document.getElementById('emptyEditorState').style.display = 'none';
+  document.getElementById('editorContent').style.display = 'flex';
+}
+
+function toggleTag(btn) {
+  const tag = btn.dataset.tag;
+  if (activeTags.has(tag)) { activeTags.delete(tag); btn.classList.remove('active'); }
+  else { activeTags.add(tag); btn.classList.add('active'); }
+}
+
+function updateWordCount() {
+  const text = document.getElementById('entryBody').value.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = `${words} word${words!==1?'s':''}`;
+}
+
+function saveEntry() {
+  const title = document.getElementById('entryTitle').value.trim() || 'Untitled';
+  const body = document.getElementById('entryBody').value.trim();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+
+  if (!state.diaryEntries) state.diaryEntries = [];
+
+  if (activeEntryId) {
+    const idx = state.diaryEntries.findIndex(e => e.id === activeEntryId);
+    if (idx > -1) {
+      state.diaryEntries[idx] = { ...state.diaryEntries[idx], title, body, tags: [...activeTags], updatedAt: dateStr + ' ' + timeStr };
+    }
+  } else {
+    const entry = { id: genId(), title, body, tags: [...activeTags], date: dateStr, time: timeStr, starred: false, createdAt: now.toISOString() };
+    state.diaryEntries.unshift(entry);
+    activeEntryId = entry.id;
+  }
+
+  saveState();
+  renderDiaryList();
+  toast('📓 Entry saved!', 'success');
+}
+
+function deleteEntry() {
+  if (!activeEntryId) return;
+  if (!confirm('Delete this entry?')) return;
+  state.diaryEntries = state.diaryEntries.filter(e => e.id !== activeEntryId);
+  saveState();
+  activeEntryId = null;
+  activeTags = new Set();
+  document.getElementById('emptyEditorState').style.display = 'flex';
+  document.getElementById('editorContent').style.display = 'none';
+  renderDiaryList();
+  toast('Entry deleted');
+}
+
+function renderDiaryList() {
+  if (!state.diaryEntries) state.diaryEntries = [];
+  const list = document.getElementById('diaryEntriesList');
+  if (state.diaryEntries.length === 0) {
+    list.innerHTML = '<div style="font-size:0.78rem;color:var(--text3);text-align:center;padding:20px 0;">No entries yet</div>';
+    return;
+  }
+  list.innerHTML = state.diaryEntries.map(e => `
+    <div class="diary-entry-item ${activeEntryId===e.id?'active':''}" onclick="openEntry('${e.id}')">
+      <div class="diary-entry-date">${e.date} · ${e.time}</div>
+      <div class="diary-entry-preview">${e.title}</div>
+      <div class="diary-entry-tags">
+        ${e.tags.map(t=>`<span class="entry-tag tag-${t}">${t}</span>`).join('')}
+      </div>
+      <button class="star-btn ${e.starred?'starred':''}" onclick="toggleStar('${e.id}',event)">${e.starred?'★':'☆'}</button>
+    </div>
+  `).join('');
+}
+
+function openEntry(id) {
+  const e = state.diaryEntries.find(e => e.id === id);
+  if (!e) return;
+  activeEntryId = id;
+  activeTags = new Set(e.tags);
+  document.getElementById('entryTitle').value = e.title;
+  document.getElementById('entryBody').value = e.body;
+  document.querySelectorAll('.editor-tag-btn').forEach(b => {
+    b.classList.toggle('active', activeTags.has(b.dataset.tag));
+  });
+  updateWordCount();
+  showEditor();
+  renderDiaryList();
+}
+
+function toggleStar(id, e) {
+  e.stopPropagation();
+  const idx = state.diaryEntries.findIndex(en => en.id === id);
+  if (idx > -1) {
+    state.diaryEntries[idx].starred = !state.diaryEntries[idx].starred;
+    saveState();
+    renderDiaryList();
+  }
+}
+
+// ─── TOAST ───────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ─── INIT ────────────────────────────────────────────────
+renderSchedule();
+renderSessionLog();
+updateTimerDisplay();
+</script>
+</body>
+</html>
